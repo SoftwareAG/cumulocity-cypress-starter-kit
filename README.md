@@ -17,7 +17,8 @@ npm i
 ```
 
 In order to run tests, you either need to connect to a remote server already running the UI to test, or start a local server.
-In this example we want to test locally, so we run:
+In this example we want to test locally, so change the targeted server in the start script of the package.json to the tenant you like.
+Then run:
 ```
 npm run start
 ```
@@ -25,20 +26,28 @@ npm run start
 The last step before we can let Cypress do it's magic is to tell Cypress which tenant you want to target with which user.
 You have 2 options:
 * (a) setup environment variables CYPRESS_tenant, CYPRESS_username and CYPRESS_password in your OS, or
-* (b) run Cypress with these variables as arguments of the command
+* (b) create a cypress.env.json file in the root of this project, with your tenant specific credentials, e.g.:
+```
+{
+    "tenant": "t12345678",
+    "username": "Your.Mail@softwareag.com",
+    "password": "SuP3rS3cUReP455w0rd!"
+}
+``` 
+Note: Please never commit your personal credentials. Do not change the .gitignore to allow commit of cypress.env.json as it will contain secrets!
 
-Now you can start the test runner.
-If you went way (a) you just need to run:
+Now you can start the test runner (by opening a second terminal in VSCode):
 ```
-npx cypress open
+npx cypress open (or npx cypress run if you prefer to stay in the terminal)
 ```
-If you want to go way (b) then run:
-```
-npx cypress run --headed --env tenant=tenantId,username=Your.Mail@softwareag.com,password=YourPassword
-```
+
+## Vision
+Not only shall this be a good starting point for you to enable you to write your first end to end tests for your Cumulocity UI project. In the future this project will contain utility functions to conveniently access Cumulocity specific UI parts, such as the side navigation, alerts, toolbar buttons, etc.  
 
 **Prerequisites:**
-  
+
+* Access to a tenant with OAuth internal enabled
+
 * Git
   
 * NodeJS
@@ -48,7 +57,7 @@ npx cypress run --headed --env tenant=tenantId,username=Your.Mail@softwareag.com
 **External dependencies:**
 
 ```
-"cypress": "^8.4.0",
+"cypress": "^8.5.0",
 ```
 
 ## Troubleshooting

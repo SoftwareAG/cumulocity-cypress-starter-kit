@@ -8,6 +8,8 @@
 // https://on.cypress.io/custom-commands
 // ***********************************************
 
+import { Client, CookieAuth } from '@c8y/client';
+
 Cypress.Commands.add('hideCookieBanner', () => {
   const COOKIE_NAME = 'acceptCookieNotice';
   const COOKIE_VALUE = '{"required":true,"functional":true}';
@@ -15,6 +17,11 @@ Cypress.Commands.add('hideCookieBanner', () => {
   Cypress.on("window:before:load", (window) => {
     window.localStorage.setItem(COOKIE_NAME, COOKIE_VALUE);
   })
+})
+
+Cypress.Commands.add('createClient', () => {
+  const client = new Client(new CookieAuth());
+  return cy.wrap(client);
 })
 
 Cypress.Commands.add('login', () => {
@@ -81,30 +88,34 @@ Cypress.Commands.add('setLanguage', (lang) => {
 })
 
 
-declare namespace Cypress {
-  interface Chainable {
-    /**
-     * Hides c8y CookieBanner.
-     * @example cy.hideCookieBanner()
-     */
-    hideCookieBanner(): Chainable<void>
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      /**
+       * Hides c8y CookieBanner.
+       * @example cy.hideCookieBanner()
+       */
+      hideCookieBanner(): Chainable<void>
 
-    /**
-     * Performs login using credentials from cypress env variables.
-     * @example cy.login()
-     */
-    login(): Chainable<void>
+      /**
+       * Performs login using credentials from cypress env variables.
+       * @example cy.login()
+       */
+      login(): Chainable<void>
 
-    /**
-     * Performs logout.
-     * @example cy.logout()
-     */
-    logout(): Chainable<void>
+      /**
+       * Performs logout.
+       * @example cy.logout()
+       */
+      logout(): Chainable<void>
 
-    /**
-     * Sets c8y UI language to the provided language or per default to English.
-     * @example cy.setLanguage('de')
-     */
-    setLanguage(lang?: string): Chainable<void>
+      /**
+       * Sets c8y UI language to the provided language or per default to English.
+       * @example cy.setLanguage('de')
+       */
+      setLanguage(lang?: string): Chainable<void>
+
+      createClient(): Chainable<Client>
+    }
   }
 }

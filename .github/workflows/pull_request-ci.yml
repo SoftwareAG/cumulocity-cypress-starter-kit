@@ -6,6 +6,9 @@ on:
 
 env:
   NODE_VERSION: '12'
+  CYPRESS_tenant: ${{ secrets.CYPRESS_TENANT }}
+  CYPRESS_username: ${{ secrets.CYPRESS_USERNAME }}
+  CYPRESS_password: ${{ secrets.CYPRESS_PASSWORD }}
 
 jobs:
   deploy:

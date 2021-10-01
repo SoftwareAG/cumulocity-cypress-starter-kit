@@ -40,8 +40,11 @@ jobs:
       - name: 🕵️‍♂️  Lint
         run: npm run lint:ci --if-present
 
-      - name: 🧪  Test
-        run: npm run test:headless --if-present
+      - name: 🧪  Test Cypress run
+        uses: cypress-io/github-action@v2
+        with:
+          build: npm run build
+          start: npm start
 
-      - name: 🚧  Build Cockpit
-        run: npm run build --if-present
+      # - name: 🚧  Build Cockpit
+      #   run: npm run build --if-present

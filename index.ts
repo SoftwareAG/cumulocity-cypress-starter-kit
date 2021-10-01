@@ -13,5 +13,5 @@ if (__MODE__ === 'production') {
 export function bootstrap() {
   return platformBrowserDynamic()
     .bootstrapModule(AppModule)
-    .catch(err => console.log(err));
+    .catch((err) => console.log(err));
 }

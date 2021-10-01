@@ -75,3 +75,36 @@ Cypress.Commands.add('logout', () => {
   cy.getCookie('XSRF-TOKEN').should('not.exist')
   cy.getCookie('authorization').should('not.exist')
 })
+
+Cypress.Commands.add('setLanguage', (lang) => {
+  window.localStorage.setItem('c8y_language', lang || 'en');
+})
+
+
+declare namespace Cypress {
+  interface Chainable {
+    /**
+     * Hides c8y CookieBanner.
+     * @example cy.hideCookieBanner()
+     */
+    hideCookieBanner(): Chainable<void>
+
+    /**
+     * Performs login using credentials from cypress env variables.
+     * @example cy.login()
+     */
+    login(): Chainable<void>
+
+    /**
+     * Performs logout.
+     * @example cy.logout()
+     */
+    logout(): Chainable<void>
+
+    /**
+     * Sets c8y UI language to the provided language or per default to English.
+     * @example cy.setLanguage('de')
+     */
+    setLanguage(lang?: string): Chainable<void>
+  }
+}

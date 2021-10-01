@@ -35,7 +35,7 @@ import '@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills
   'mouseover',
   'mouseout',
   'mouseenter',
-  'mouseleave'
+  'mouseleave',
 ]; // disable patch specified eventNames
 
 /***************************************************************************************************

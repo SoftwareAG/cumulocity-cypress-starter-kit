@@ -1,9 +1,17 @@
-describe("Your First Test", function () {
+import { Client, IResult, ICurrentTenant } from '@c8y/client';
 
+describe("Your First Test", function () {
+  let client: Client;
   before(() => {
     cy.hideCookieBanner()
-    cy.login()
-    cy.visit("/apps/cypress-starter-kit/index.html#/")
+    cy.loginUI('cypress-starter-kit')
+    cy.createClient().then(clientTmp => {
+      client = clientTmp;
+    })
+  })
+
+  it("Can access current tenant", () => {
+    cy.wrap(client.tenant.current()).should((result: IResult<ICurrentTenant>) => {expect(result.res.status).to.eq(200)})
   })
 
   // this test onyly passes, if your language is set to english of course ;)

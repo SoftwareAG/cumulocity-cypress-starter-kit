@@ -10,6 +10,40 @@
 
 import { Client, CookieAuth } from '@c8y/client';
 
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      /**
+       * Hides c8y CookieBanner.
+       * @example cy.hideCookieBanner()
+       */
+      hideCookieBanner(): Chainable<void>
+
+      /**
+       * Performs login using credentials from cypress env variables.
+       * @example cy.login()
+       */
+      login(): Chainable<void>
+
+      /**
+       * Performs logout.
+       * @example cy.logout()
+       */
+      logout(): Chainable<void>
+
+      /**
+       * Sets c8y UI language to the provided language or per default to English.
+       * @example cy.setLanguage('de')
+       */
+      setLanguage(lang?: string): Chainable<void>
+
+      createClient(): Chainable<Client>
+
+      loginUI(appContextPath: string): Chainable<void>
+    }
+  }
+}
+
 Cypress.Commands.add('hideCookieBanner', () => {
   const COOKIE_NAME = 'acceptCookieNotice';
   const COOKIE_VALUE = '{"required":true,"functional":true}';
@@ -87,35 +121,42 @@ Cypress.Commands.add('setLanguage', (lang) => {
   window.localStorage.setItem('c8y_language', lang || 'en');
 })
 
+Cypress.Commands.add("loginUI", (appContextPath: string) => {
+  const username = Cypress.env("username");
+  const password = Cypress.env("password");
+  const tenant = Cypress.env("tenant");
 
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      /**
-       * Hides c8y CookieBanner.
-       * @example cy.hideCookieBanner()
-       */
-      hideCookieBanner(): Chainable<void>
+  // it is ok for the tenant and username to be visible in the Command Log
+  expect(tenant, "Missing tenant value, set using CYPRESS_tenant").to.be.a(
+    "string"
+  ).and.not.be.empty;
 
-      /**
-       * Performs login using credentials from cypress env variables.
-       * @example cy.login()
-       */
-      login(): Chainable<void>
+  expect(
+    username,
+    "Missing username value, set using CYPRESS_username"
+  ).to.be.a("string").and.not.be.empty;
 
-      /**
-       * Performs logout.
-       * @example cy.logout()
-       */
-      logout(): Chainable<void>
-
-      /**
-       * Sets c8y UI language to the provided language or per default to English.
-       * @example cy.setLanguage('de')
-       */
-      setLanguage(lang?: string): Chainable<void>
-
-      createClient(): Chainable<Client>
-    }
+  // but the password value should not be shown
+  if (typeof password !== "string" || !password) {
+    throw new Error("Missing password value, set using CYPRESS_password");
   }
-}
+
+  cy.visit(`/apps/${appContextPath}/#/`);
+  cy.get("input[name=tenant]", { timeout: 10000 }).type(tenant);
+  cy.get("input[name=user]").type(username);
+  cy.intercept({
+    method: 'GET',
+    url: '/tenant/currentTenant',
+  }).as('accessCurrentTenant');
+  cy.intercept({
+    method: 'POST',
+    url: '/tenant/oauth*',
+  }).as('requestOAuthCookie');
+  cy.get("input[name=password]").type(`${password}{enter}`, {log: false});
+
+  // credentials Valid
+  cy.wait('@accessCurrentTenant').its('response.statusCode').should('equal', 200)
+  // credentials Valid
+  cy.wait('@requestOAuthCookie').its('response.statusCode').should('equal', 200)
+  cy.wait(1000)
+});

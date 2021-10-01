@@ -40,6 +40,13 @@ declare global {
       createClient(): Chainable<Client>
 
       loginUI(appContextPath: string): Chainable<void>
+
+      /**
+       * Allows to use a custom response body for the request to: '/apps/public/public-options/options.json'.
+       * If 'jsonResponseBody' is not defined request will be answered with status 404.
+       * @example cy.modifyTenantBrandingRequests({name: 'Tristan'})
+       */
+      modifyTenantBrandingRequests(jsonResponseBody?: any): Chainable<void>
     }
   }
 }
@@ -129,6 +136,13 @@ Cypress.Commands.add('logout', () => {
 
 Cypress.Commands.add('setLanguage', (lang) => {
   window.localStorage.setItem('c8y_language', lang || 'en');
+})
+
+Cypress.Commands.add('modifyTenantBrandingRequests', (jsonResponse?: any) => {
+  cy.intercept({
+    method: 'GET',
+    url: '/apps/public/public-options/options.json*',
+  }, {statusCode: jsonResponse ? 200 : 404, body: jsonResponse}).as('blockTenantBrandingRequests')
 })
 
 Cypress.Commands.add("loginUI", (appContextPath: string) => {

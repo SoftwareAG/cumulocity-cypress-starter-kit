@@ -45,6 +45,9 @@ jobs:
         with:
           # build: npm run build
           start: npm start
+          wait-on: 'http://localhost:9000/apps/cypress-starter-kit/'
+          # wait for 2 minutes for the server to respond
+          wait-on-timeout: 120
 
       - name: 🚧  Build
         run: npm run build --if-present

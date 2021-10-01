@@ -44,14 +44,14 @@ declare global {
   }
 }
 
-it ('Application compiled', () => {
-  cy.intercept({
-    method: 'GET',
-    url: '/apps/*/*',
-  }).as('hasCompiled');
-  cy.visit(`/apps/cypress-starter-kit/#/`);
-  cy.wait('@hasCompiled', {responseTimeout: 120000}).its('response.statusCode').should('equal', 200);
-})
+// it ('Application compiled', () => {
+//   cy.intercept({
+//     method: 'GET',
+//     url: '/apps/*/*',
+//   }).as('hasCompiled');
+//   cy.visit(`/apps/cypress-starter-kit/#/`);
+//   cy.wait('@hasCompiled', {responseTimeout: 120000}).its('response.statusCode').should('equal', 200);
+// })
 
 
 Cypress.Commands.add('hideCookieBanner', () => {

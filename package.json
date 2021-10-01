@@ -8,7 +8,10 @@
     "build": "c8ycli build",
     "deploy": "c8ycli deploy",
     "test:headless": "cypress run --headless",
-    "test": "cypress open"
+    "test": "cypress open",
+    "lint": "tsc --noEmit && eslint . --ext js,ts,json --quiet --fix",
+    "lint:ci": "tsc --noEmit && eslint . --ext js,ts,json --quiet",
+    "lint:with-warns": "tsc --noEmit && eslint . --ext js,ts,json --fix"
   },
   "keywords": [],
   "author": "",
@@ -37,7 +40,13 @@
     "@angular/language-service": "8.2.13",
     "@c8y/cli": "1010.0.15",
     "@types/node": "^10.1.4",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.28.3",
     "cypress": "^8.5.0",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.3.0",
     "typescript": "3.5.3"
   },
   "c8y": {

@@ -6,7 +6,9 @@
   "scripts": {
     "start": "c8ycli server -u https://gcc.eu-latest.cumulocity.com/",
     "build": "c8ycli build",
-    "deploy": "c8ycli deploy"
+    "deploy": "c8ycli deploy",
+    "test:headless": "cypress run --headless",
+    "test": "cypress open"
   },
   "keywords": [],
   "author": "",

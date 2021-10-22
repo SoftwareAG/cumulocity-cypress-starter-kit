@@ -6,6 +6,7 @@ describe('Your First Test', function () {
   let uiUtil = new CumulocityUserInterfaceUtil();
 
   before(() => {
+    cy.logout();
     cy.modifyTenantBrandingRequests({
       brandingCssVars: {
         'brand-logo-img-height': '40%',
@@ -28,8 +29,7 @@ describe('Your First Test', function () {
       cookieBanner: {},
     });
     cy.hideCookieBanner();
-    cy.loginUI('cypress-starter-kit');
-    cy.createClient().then((clientTmp) => {
+    cy.loginUI('cypress-starter-kit').then((clientTmp) => {
       client = clientTmp;
     });
   });

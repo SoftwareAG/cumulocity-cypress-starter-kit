@@ -8,7 +8,7 @@
 // https://on.cypress.io/custom-commands
 // ***********************************************
 
-import { Client, CookieAuth } from '@c8y/client';
+import { BasicAuth, Client, CookieAuth } from '@c8y/client';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -40,7 +40,11 @@ declare global {
 
       createClient(): Chainable<Client>;
 
-      loginUI(appContextPath: string): Chainable<void>;
+      /**
+       * Performs a login via UI interaction, supporting both basic auth and OAuth.
+       * @example cy.loginUI('cockpit')
+       */
+      loginUI(appContextPath: string): Chainable<Client>;
 
       /**
        * Allows to use a custom response body for the request to: '/apps/public/public-options/options.json'.
@@ -171,11 +175,31 @@ Cypress.Commands.add('loginUI', (appContextPath: string) => {
     method: 'POST',
     url: '/tenant/oauth*',
   }).as('requestOAuthCookie');
+  cy.intercept({
+    method: 'GET',
+    url: '/user/currentUser',
+  }).as('accessCurrentUser');
   cy.get('input[name=password]').type(`${password}{enter}`, { log: false });
 
-  // credentials Valid
+  // credentials valid via basic auth
   cy.wait('@accessCurrentTenant').its('response.statusCode').should('equal', 200);
-  // credentials Valid
-  cy.wait('@requestOAuthCookie').its('response.statusCode').should('equal', 200);
-  cy.wait(1000);
+  // current user fetched via basic auth or oauth
+  cy.wait('@accessCurrentUser').its('response.statusCode').should('equal', 200);
+
+  // If cookie was requested, tenant uses OAuth
+  let client: Client;
+  return cy
+    .get('@requestOAuthCookie.all')
+    .should((requests) => {
+      if (requests.length === 1) {
+        client = new Client(new CookieAuth());
+      } else if (requests.length === 0) {
+        client = new Client(new BasicAuth({ tenant, user: username, password }));
+      }
+      // Cookie should only be requested maximum a single time
+      return requests.length <= 1;
+    })
+    .then(() => {
+      return client;
+    });
 });

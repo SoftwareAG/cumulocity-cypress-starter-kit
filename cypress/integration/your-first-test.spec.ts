@@ -3,7 +3,7 @@ import CumulocityUserInterfaceUtil from '../support/c8y-ui-util';
 
 describe('Your First Test', function () {
   let client: Client;
-  let uiUtil = new CumulocityUserInterfaceUtil();
+  const uiUtil = new CumulocityUserInterfaceUtil();
 
   before(() => {
     cy.logout();
@@ -41,12 +41,12 @@ describe('Your First Test', function () {
   });
 
   it('Has correct toolbar buttons set', () => {
-    uiUtil.getToolbarListButtons('right').should($btns => {
-      expect($btns.eq(0).text(), 'first item').to.contain('Add widget')
-      expect($btns.eq(1).text(), 'second item').to.contain('Edit')
-      expect($btns.eq(2).text(), 'third item').to.contain('Full screen')
-    })
-  })
+    uiUtil.getToolbarListButtons('right').should(($btns) => {
+      expect($btns.eq(0).text(), 'first item').to.contain('Add widget');
+      expect($btns.eq(1).text(), 'second item').to.contain('Edit');
+      expect($btns.eq(2).text(), 'third item').to.contain('Full screen');
+    });
+  });
 
   // this test onyly passes, if your language is set to english of course ;)
   it('Expect Welcome to Cockpit to show', function () {

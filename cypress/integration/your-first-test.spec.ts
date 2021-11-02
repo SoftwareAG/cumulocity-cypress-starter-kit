@@ -1,8 +1,12 @@
 import { Client, IResult, ICurrentTenant } from '@c8y/client';
+import CumulocityUserInterfaceUtil from '../support/c8y-ui-util';
 
 describe('Your First Test', function () {
   let client: Client;
+  const uiUtil = new CumulocityUserInterfaceUtil();
+
   before(() => {
+    cy.logout();
     cy.modifyTenantBrandingRequests({
       brandingCssVars: {
         'brand-logo-img-height': '40%',
@@ -25,8 +29,7 @@ describe('Your First Test', function () {
       cookieBanner: {},
     });
     cy.hideCookieBanner();
-    cy.loginUI('cypress-starter-kit');
-    cy.createClient().then((clientTmp) => {
+    cy.loginUI('cypress-starter-kit').then((clientTmp) => {
       client = clientTmp;
     });
   });
@@ -37,16 +40,18 @@ describe('Your First Test', function () {
     });
   });
 
+  it('Has correct toolbar buttons set', () => {
+    uiUtil.getToolbarListButtons('right').should(($btns) => {
+      expect($btns.eq(0).text(), 'first item').to.contain('Add widget');
+      expect($btns.eq(1).text(), 'second item').to.contain('Edit');
+      expect($btns.eq(2).text(), 'third item').to.contain('Full screen');
+    });
+  });
+
   // this test onyly passes, if your language is set to english of course ;)
   it('Expect Welcome to Cockpit to show', function () {
-    // we wait until the loading spinner disappears, to make sure we don't need to set crazy high timeouts in the next steps
-    // cy.waitFor(
-
-    // )
-    cy.get('.loading-bar', { timeout: 10000 }).should('not.be.visible', { timeout: 60000 });
-
     // let's test if our cockpit app shows the typical 'Welcome to Cockpit' text
-    cy.get('c8y-welcome-to-cockpit', { timeout: 10000 })
+    cy.get('c8y-welcome-to-cockpit')
       .find('h2')
       .should(($h2) => {
         expect($h2.text()).to.equal('Welcome to Cockpit');

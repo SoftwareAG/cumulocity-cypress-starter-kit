@@ -15,3 +15,5 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
+import './c8y-oauth-commands';
+import './c8y-branding-commands';

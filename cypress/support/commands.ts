@@ -1,14 +1,10 @@
 // ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
 // For more comprehensive examples of custom
 // commands please read more here:
 // https://on.cypress.io/custom-commands
 // ***********************************************
 
-import { BasicAuth, Client, CookieAuth } from '@c8y/client';
+import { BasicAuth, Client, CookieAuth, IManagedObject } from '@c8y/client';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -21,49 +17,26 @@ declare global {
       hideCookieBanner(): Chainable<void>;
 
       /**
-       * Performs login using credentials from cypress env variables.
-       * @example cy.login()
+       * Opens the specified path and waits until the UI has finished loading.
        */
-      login(): Chainable<void>;
+      visitAndWaitToFinishLoading(path: string): Chainable<void>;
 
-      /**
-       * Performs logout.
-       * @example cy.logout()
-       */
-      logout(): Chainable<void>;
+      getAttributes(attr: string): Chainable<string[]>;
 
       /**
        * Sets c8y UI language to the provided language or per default to English.
        * @example cy.setLanguage('de')
        */
-      setLanguage(lang?: string): Chainable<void>;
-
-      createClient(): Chainable<Client>;
+      setLanguage(lang: string): Chainable<void>;
 
       /**
        * Performs a login via UI interaction, supporting both basic auth and OAuth.
        * @example cy.loginUI('cockpit')
        */
       loginUI(appContextPath: string): Chainable<Client>;
-
-      /**
-       * Allows to use a custom response body for the request to: '/apps/public/public-options/options.json'.
-       * If 'jsonResponseBody' is not defined request will be answered with status 404.
-       * @example cy.modifyTenantBrandingRequests({name: 'Tristan'})
-       */
-      modifyTenantBrandingRequests(jsonResponseBody?: any): Chainable<void>;
     }
   }
 }
-
-// it ('Application compiled', () => {
-//   cy.intercept({
-//     method: 'GET',
-//     url: '/apps/*/*',
-//   }).as('hasCompiled');
-//   cy.visit(`/apps/cypress-starter-kit/#/`);
-//   cy.wait('@hasCompiled', {responseTimeout: 120000}).its('response.statusCode').should('equal', 200);
-// })
 
 Cypress.Commands.add('hideCookieBanner', () => {
   const COOKIE_NAME = 'acceptCookieNotice';
@@ -72,6 +45,17 @@ Cypress.Commands.add('hideCookieBanner', () => {
   Cypress.on('window:before:load', (window) => {
     window.localStorage.setItem(COOKIE_NAME, COOKIE_VALUE);
   });
+});
+
+function waitForLoadingBarToDisappear() {
+  cy.get('.loading-bar', { timeout: 20000 });
+  cy.get('.loading-bar', { timeout: 20000 }).should('not.be.visible', { timeout: 60000 });
+}
+
+Cypress.Commands.add('visitAndWaitToFinishLoading', (path: string) => {
+  // cy.intercept('/notification/realtime').as('CumulocityFinishedLoading');
+  cy.visit(path);
+  waitForLoadingBarToDisappear();
 });
 
 Cypress.Commands.add('createClient', () => {
@@ -135,18 +119,24 @@ Cypress.Commands.add('logout', () => {
   cy.getCookie('authorization').should('not.exist');
 });
 
-Cypress.Commands.add('setLanguage', (lang) => {
-  window.localStorage.setItem('c8y_language', lang || 'en');
-});
-
-Cypress.Commands.add('modifyTenantBrandingRequests', (jsonResponse?: any) => {
+Cypress.Commands.add('setLanguage', (lang: string) => {
   cy.intercept(
     {
       method: 'GET',
-      url: '/apps/public/public-options/options.json*',
+      url: '/inventory/managedObjects?fragmentType=language*',
     },
-    { statusCode: jsonResponse ? 200 : 404, body: jsonResponse }
-  ).as('blockTenantBrandingRequests');
+    (req) => {
+      const languageFragment = req.query.fragmentType.toString();
+      const body: Partial<IManagedObject> = {
+        id: '123',
+        type: 'c8y_UserPreference',
+        [languageFragment]: lang,
+      };
+
+      req.reply({ statusCode: 200, body });
+    }
+  );
+  window.localStorage.setItem('c8y_language', lang);
 });
 
 Cypress.Commands.add('loginUI', (appContextPath: string) => {
@@ -203,3 +193,24 @@ Cypress.Commands.add('loginUI', (appContextPath: string) => {
       return client;
     });
 });
+
+Cypress.Commands.add(
+  'getAttributes',
+  {
+    prevSubject: true,
+  },
+  (subject: JQuery<HTMLElement>, attr: string) => {
+    const attrList = [];
+    cy.wrap(subject).each(($el) => {
+      cy.wrap($el, { log: false })
+        .invoke('attr', attr)
+        .then((value) => {
+          if (value == null) {
+            throw new Error(`${attr} not found.`);
+          }
+          attrList.push(value);
+        });
+    });
+    return cy.wrap(attrList);
+  }
+);
